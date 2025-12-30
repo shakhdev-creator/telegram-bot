@@ -1,12 +1,14 @@
+# bot_invite.py
 from flask import Flask
 from threading import Thread
 import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ChatJoinRequestHandler, ContextTypes
 
-BOT_TOKEN = os.environ["8488363813:AAG7dbj8cXz70WNl54vy5G-1x2QGKteW8WY"]
+# --- Read BOT_TOKEN from Render environment variable ---
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 
-# --- Keep alive server ---
+# --- Keep-alive Flask server ---
 keep_alive = Flask("")
 
 @keep_alive.route("/")
@@ -42,5 +44,7 @@ async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(ChatJoinRequestHandler(handle_join_request))
 
+print("Bot is starting...")
 app.run_polling()
+
 
