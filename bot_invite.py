@@ -2,10 +2,18 @@
 from flask import Flask
 from threading import Thread
 import os
+import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ChatJoinRequestHandler, ContextTypes
 
-# --- Read BOT_TOKEN from Render environment variable ---
+# --- Logging setup ---
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# --- Read BOT_TOKEN from environment variable ---
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 
 # --- Keep-alive Flask server ---
@@ -33,18 +41,20 @@ Join and stay updated 🔥
 
 async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.chat_join_request.from_user
+    logger.info(f"Join request from user: {user.id} ({user.username})")
     try:
         await context.bot.send_message(
             chat_id=user.id,
             text=OTHER_CHANNELS_TEXT
         )
+        logger.info(f"Message sent successfully to {user.id}")
     except Exception as e:
-        print(f"Failed to message {user.id}: {e}")
+        logger.error(f"Failed to message {user.id}: {e}")
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(ChatJoinRequestHandler(handle_join_request))
 
-print("Bot is starting...")
+logger.info("Bot is starting...")
 app.run_polling()
 
 
