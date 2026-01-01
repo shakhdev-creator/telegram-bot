@@ -24,14 +24,16 @@ def run_flask():
 
 # --- Bot Logic ---
 OTHER_CHANNELS_TEXT = """
-👋 Welcome!
+🎉 Tabriklaymiz!
 
-To join, check out our other useful channels 👇
+Siz 1000$ qiymatdagi VIP kanalga bepul a’zolikni qo‘lga kiritdingiz🔥.
 
-📊 Channel 1: https://t.me/+CgkHK4DHxr5mNjNi  
+📈 Bu yerda faqat eng sifatli va foydali ma’lumotlar joylanadi.
+Imkoniyatni qo‘ldan boy bermang!
 
-Join and stay updated 🔥
+👉 VIP kanal: https://t.me/+CgkHK4DHxr5mNjNi
 """
+
 
 async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     request = update.chat_join_request
