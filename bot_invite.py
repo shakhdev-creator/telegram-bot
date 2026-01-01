@@ -36,13 +36,14 @@ Join and stay updated 🔥
 async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     request = update.chat_join_request
     user_id = request.from_user.id
-    
+
     try:
-        # 1. Send the private message
-        await context.bot.send_message(chat_id=user_id, text=OTHER_CHANNELS_TEXT)
-        # 2. Automatically approve the user
-        await request.approve()
-        logger.info(f"Approved user {user_id}")
+        # Send private message ONLY
+        await context.bot.send_message(
+            chat_id=user_id,
+            text=OTHER_CHANNELS_TEXT
+        )
+        logger.info(f"Sent message to user {user_id}")
     except Exception as e:
         logger.error(f"Error handling request: {e}")
 
