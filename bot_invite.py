@@ -1,70 +1,101 @@
 import os
 import logging
-import asyncio
-from flask import Flask
 from threading import Thread
-from telegram import Update
-from telegram.ext import ApplicationBuilder, ChatJoinRequestHandler, ContextTypes
+from flask import Flask
 
-# Logging setup
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup
+)
+from telegram.ext import (
+    ApplicationBuilder,
+    ChatJoinRequestHandler,
+    ContextTypes
+)
+
+# ---------------- LOGGING ----------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Flask setup for Render's health check
-server = Flask("")
+# ---------------- FLASK (Render health check) ----------------
+server = Flask(__name__)
 
 @server.route("/")
 def home():
     return "Bot is running!"
 
 def run_flask():
-    # Render provides the PORT environment variable automatically
     port = int(os.environ.get("PORT", 8080))
     server.run(host="0.0.0.0", port=port)
 
-# --- Bot Logic ---
-OTHER_CHANNELS_TEXT = """
-🎉 Tabriklaymiz!
+# ---------------- BOT CONTENT ----------------
 
-Siz 1000$ qiymatdagi VIP kanalga bepul a’zolikni qo‘lga kiritdingiz🔥.
-
-📈 Bu yerda faqat eng sifatli va foydali ma’lumotlar joylanadi.
-Imkoniyatni qo‘ldan boy bermang!
-
-👉 VIP kanal: https://t.me/+CgkHK4DHxr5mNjNi
-"""
+# ⚠️ VIP rasm URL (o‘zingiznikiga almashtiring)
+VIP_IMAGE_URL = (
+    "https://raw.githubusercontent.com/"
+    "shakhdev-creator/telegram-bot/"
+    "c90409f196f037449c6a26858ba887867de6108e/"
+    "photo_2026-01-02_19-33-46.jpg"
+)
 
 
+VIP_TEXT = (
+    "Assalomu alaykum va rahmatullohi va barakatuh 😊\n\n"
+    "🎉 Tabriklaymiz! Siz 1000$ LIK VIP SIGNAL kanalini yutib oldingiz!\n\n"
+    "🎯 VIP SIGNAL kanaliga qo‘shilish uchun "
+    "“Qo‘shilish” tugmasini bosing 👇"
+)
+
+KEYBOARD = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton(
+            "💎 1000$ lik kanal",
+            url="https://t.me/+CgkHK4DHxr5mNjNi"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            "➕ Qo‘shilish",
+            url="https://t.me/+CgkHK4DHxr5mNjNi"
+        )
+    ]
+])
+
+# ---------------- JOIN REQUEST HANDLER ----------------
 async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     request = update.chat_join_request
     user_id = request.from_user.id
 
     try:
-        # Send private message ONLY
-        await context.bot.send_message(
+        await context.bot.send_photo(
             chat_id=user_id,
-            text=OTHER_CHANNELS_TEXT
+            photo=VIP_IMAGE_URL,
+            caption=VIP_TEXT,
+            reply_markup=KEYBOARD
         )
-        logger.info(f"Sent message to user {user_id}")
-    except Exception as e:
-        logger.error(f"Error handling request: {e}")
 
-# --- Main Execution ---
+        logger.info(f"VIP message sent to user {user_id}")
+
+        # ❌ AGAR AUTO-APPROVE KERAK EMAS BO‘LSA — O‘CHIQ QOLADI
+        # await request.approve()
+
+    except Exception as e:
+        logger.error(f"Error handling join request: {e}")
+
+# ---------------- MAIN ----------------
 if __name__ == "__main__":
-    # Start Flask in a separate thread
+    # Flask alohida thread’da ishlaydi
     Thread(target=run_flask).start()
 
-    # Get Token from Render Environment Variables
-    token = os.environ.get("BOT_TOKEN")
-    
-    if not token:
-        logger.error("No BOT_TOKEN found in environment variables!")
+    BOT_TOKEN = os.environ.get("BOT_TOKEN")
+
+    if not BOT_TOKEN:
+        logger.error("BOT_TOKEN not found in environment variables!")
     else:
-        app = ApplicationBuilder().token(token).build()
-        
-        # Use ChatJoinRequestHandler for "Join Requests"
+        app = ApplicationBuilder().token(BOT_TOKEN).build()
         app.add_handler(ChatJoinRequestHandler(handle_join_request))
-        
+
         logger.info("Bot polling started...")
         app.run_polling()
 
